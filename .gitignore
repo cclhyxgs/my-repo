@@ -48,8 +48,8 @@ config/credentials.json
 
 # ===== 开发机用户工作配置（个人自选/方案/交易账本，非模板：
 #       模板在 engine/config/seed，须保留追踪）=====
-config/quant_model.json
-config/quant_model*.json
+# 注：config/quant_model.json（方案/因子档案/当前方案）2026-10-05 起**纳入**版本控制
+#     —— 它是核心资产，需要可 diff / 可回退；已确认不含密钥类敏感字段。
 config/data_sources.json
 config/discipline_journal.json
 config/sector_map.json
@@ -83,3 +83,13 @@ decision_cards/
 *.bak
 *.bak_*
 .trae-html-share-packages/
+
+# ===== 运行态 / 个人数据（2026-10-05 清理出版本库）=====
+# 扫描缓存、测试运行产物、Trae IDE 生成文档、运行时状态与个人情绪账本
+scan_cache/
+test_output.txt
+.trae/
+config/fq_quota_state.json
+config/kline_refresh_state.json
+config/usage.json
+config/emotion_journal.json
