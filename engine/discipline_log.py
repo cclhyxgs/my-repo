@@ -42,8 +42,10 @@ DEFAULT_COOLDOWN = {
 #   单桶（某类信号 / 某市场）至少 MIN_SAMPLES 条，才纳入结论；
 #   模式识别至少 MIN_BUCKETS 个达标桶，才比较出「舒适区 / 别扭区」。
 #   取 3 是「最小可信样本」下限：低于此只展示计数，不硬下判断，避免把小样本噪音当洞察。
+#   删市场维度后仅有「信号类型」一个分桶维度，故达标桶门槛降为 1：单一类型的达标样本
+#   也足以给出「执行率稳定 / 看不出舒适区」这类诚实结论，避免用户永远拿不到任何结论。
 MIN_SAMPLES = 3
-MIN_BUCKETS = 2
+MIN_BUCKETS = 1
 
 
 class DisciplineJournal:
@@ -552,14 +554,13 @@ class DisciplineJournal:
         return base
 
     def pattern(self, market=None, min_samples=MIN_SAMPLES, min_buckets=MIN_BUCKETS):
-        """模式识别（F-1107）：跨维度找「舒适区」——在哪类条件下你最守纪律。
+        """模式识别（F-1107）：找「舒适区」——在哪种信号类型下你最守纪律。
 
-        维度：信号类型、市场。每个分桶统计执行率，仅保留样本 >= min_samples 的桶；
-        达到 min_buckets 个可靠桶才给「舒适区 / 别扭区」结论，否则返回还差多少条
-        （ready=False + headline 里带提示），避免小样本硬下判断。
+        维度：信号类型（建仓/加仓/减仓/清仓）。每个分桶统计执行率，仅保留样本 >=
+        min_samples 的桶；达到 min_buckets 个可靠桶才给「舒适区 / 别扭区」结论，
+        否则返回还差多少条（ready=False + headline 里带提示），避免小样本硬下判断。
         """
         cn = {'buy': '建仓', 'add': '加仓', 'reduce': '减仓', 'clear': '清仓'}
-        mkt_cn = {'stock': 'A股', 'futures': '期货'}
         sigs = self._data.get('signals', [])
         if market and market != 'all':
             sigs = [s for s in sigs if s.get('market') == market]
@@ -568,18 +569,16 @@ class DisciplineJournal:
             st = s.get('signal_type') or ''
             if st:
                 groups.setdefault(('signal_type', st), []).append(s)
-            mk = s.get('market') or 'unknown'
-            groups.setdefault(('market', mk), []).append(s)
 
         buckets = []
         for (dim, key), items in groups.items():
             n = len(items)
             executed = sum(1 for x in items if (x.get('execution') or {}).get('executed'))
-            label = cn.get(key, key) if dim == 'signal_type' else mkt_cn.get(key, key)
+            label = cn.get(key, key)
             buckets.append({'dimension': dim, 'key': key, 'label': label, 'count': n,
                             'executed': executed, 'exec_rate': round(executed / n * 100, 1),
                             'reliable': n >= min_samples})
-        dim_order = {'signal_type': 0, 'market': 1}
+        dim_order = {'signal_type': 0}
         buckets.sort(key=lambda b: (dim_order.get(b['dimension'], 9), -b['exec_rate']))
 
         reliable = [b for b in buckets if b['reliable']]
