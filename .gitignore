@@ -1,0 +1,85 @@
+# ============================================================
+# 技术分析工具 — .gitignore
+# 覆盖范围：Python 字节码/缓存、回测子进程临时协议文件、
+#           运行缓存(K线/因子 pkl)、回测/测试报告产物、日志、
+#           配置备份、PyInstaller 打包产物、IDE/助手目录、
+#           敏感授权文件（私钥、机器码、运行时授权状态）。
+# ============================================================
+
+# ===== Python 字节码 / 编译缓存 =====
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ===== 回测子进程临时产物（engine/backtest_protocol 协议文件：
+#       .backtest_tmp/*.config.json、*.stdout.log 等）=====
+.backtest_tmp/
+
+# ===== 运行缓存（K线/因子缓存，dev 模式落在 cache/，量极大）=====
+cache/
+*.pkl
+
+# ===== 回测 / 测试运行报告产物 =====
+bt_*_report.json
+*_report.json
+bt_*.csv
+bt_*.png
+test_*.json
+test_*.csv
+
+# ===== 日志 =====
+*.log
+
+# ===== 配置备份（运行期生成的 *_backup.json，非源码）=====
+**/*_backup.json
+
+# ===== PyInstaller 打包产物（frozen exe）=====
+build/
+dist/
+*.exe
+# 注：*.spec 是打包构建脚本（源码），保持纳入版本管理，不忽略。
+
+# ===== 敏感授权文件（必须忽略，防止泄露）=====
+license/private_key.pem
+config/license.json
+config/machine_id
+config/.lstate
+config/credentials.json
+
+# ===== 开发机用户工作配置（个人自选/方案/交易账本，非模板：
+#       模板在 engine/config/seed，须保留追踪）=====
+config/quant_model.json
+config/quant_model*.json
+config/data_sources.json
+config/discipline_journal.json
+config/sector_map.json
+config/watchlist*.txt
+
+# ===== 编辑器 / IDE =====
+.vscode/
+
+# ===== 助手工作目录（WorkBuddy 记忆，非项目源码）=====
+.workbuddy/
+
+# ===== 清理暂存区（dev/分析遗留物移动至此，可随时永久删除，不入版本）=====
+archive/
+logs/
+
+# ===== 虚拟环境 / 前端依赖（体积大，可由 requirements / package-lock 重建）=====
+.venv-server/
+.venv/
+**/node_modules/
+web/.build_check/
+web/vite.config.js.timestamp-*.mjs
+
+# ===== 历史备份目录（_bak_* 为改动前快照，非源码）=====
+_bak_*/
+
+# ===== 生成产物：宣传素材 / 决策卡 PNG / 报告导出（体积大，非源码）=====
+reports/
+decision_cards/
+
+# ===== 备份 / 分享包等非源码产物（含用户配置备份，可能带个人信息）=====
+*.bak
+*.bak_*
+.trae-html-share-packages/

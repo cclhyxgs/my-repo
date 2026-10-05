@@ -1,0 +1,45 @@
+{
+  "version": 3,
+  "categories": {
+    "kline": [
+      "tencent"
+    ],
+    "realtime": [
+      "sina",
+      "tencent"
+    ],
+    "stock_list": [
+      "sina"
+    ],
+    "market_breadth": [
+      "eastmoney"
+    ]
+  },
+  "providers": {
+    "tencent": {
+      "impl": "TencentSource",
+      "display_name": "腾讯"
+    },
+    "sina": {
+      "impl": "SinaSource",
+      "display_name": "新浪"
+    },
+    "eastmoney": {
+      "impl": "EastmoneySource",
+      "display_name": "东方财富"
+    }
+  },
+  "kline_source": "tencent",
+  "source_options": {
+    "tencent": {
+      "display_name": "腾讯（前复权）",
+      "desc": "日K/周K 前复权，跨周期连续。无分钟级K线——不能做分钟级量化分析与自选诊断（周期范围仅日K/周K，与旧版一致）",
+      "periods": ["日K", "周K"]
+    },
+    "sina": {
+      "display_name": "新浪（未复权）",
+      "desc": "含分钟级K线（未复权）：1/5/15/30/60分钟。可做分钟级量化分析与自选诊断；注意日K/周K 也为未复权，跨除权日价格跳变",
+      "periods": ["日K", "周K", "60分钟", "30分钟", "15分钟", "5分钟", "1分钟"]
+    }
+  }
+}

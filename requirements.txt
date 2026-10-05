@@ -1,0 +1,23 @@
+# M-Bull 运行时依赖锁定（2026-08-16 商用前审计生成）
+# 安装：python -m pip install -r requirements.txt
+# 打包：python -m PyInstaller build_webview.spec --noconfirm（需另装 pyinstaller）
+pywebview==6.2.1
+pythonnet==3.1.0
+requests==2.34.2
+pandas==3.0.3
+numpy==2.5.1
+matplotlib==3.11.0
+cryptography==49.0.0
+# 通达信行情源：A股日K 第一手前复权源（engine/data_sources/tdx.py 延迟 import；
+# 打包需在 build_webview.spec 的 hiddenimports 登记 pytdx 全部子模块）
+pytdx==1.72
+
+
+C:\Users\Administrator\AppData\Local\M-Bull
+
+
+python license/keygen.py gen --type trial    --mid <机器码>    # 试用（30天）
+python license/keygen.py gen --type monthly  --mid <机器码>    # 月度（30天）
+python license/keygen.py gen --type yearly   --mid <机器码>    # 年度（365天）
+python license/keygen.py gen --type per_use  --mid <机器码> --uses 100  # 按次（100次）
+python license/keygen.py gen --type lifetime --mid <机器码>    # 永久（永不过期）

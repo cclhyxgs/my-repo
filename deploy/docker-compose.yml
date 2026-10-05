@@ -1,0 +1,88 @@
+# ============================================================
+# M-Bull H5 —— 编排（骨架期 / C1#2 规格 S）
+# ============================================================
+# 本次交付形态：静态断言 T1 / T2 / T6
+#   —— 本次不接 PG / Redis / Celery，api 起不来业务端点属预期，
+#      但 TZ 与 nginx proxy_buffering off 两条 §2.13 硬约束必须在本文件落地。
+#   —— PG / Redis 用 profiles:[p1] 门控，**默认不启动**，
+#      避免"半配置服务"导致 compose 校验/启动报错（B4）。
+# 启用方式（P1/P2 接入时）：docker compose --profile p1 up -d
+# ============================================================
+name: mbull-h5
+
+services:
+  # ---------------- API（单副本，R-09）----------------
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: mbull-api
+    environment:
+      TZ: Asia/Shanghai                 # §2.13-2 硬约束
+      QUANT_SYSTEM_DIR: /data/m-bull    # engine 唯一路径注入口（补充约束 1）
+      MBULL_ENV: production
+      MBULL_ENABLE_INTERNAL_PROBE: "0"  # 生产关闭内部探针（B3）
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - mbull-data:/data/m-bull
+    # R-09（C1#2 规格 S）：全局状态未外置前禁止扩副本。
+    # 不要在此加 deploy.replicas / scale，也不要给 CMD 加 --workers>1。
+    restart: unless-stopped
+
+  # ---------------- 网关（静态前端 + 反代 + SSE 免缓冲）----------------
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: mbull-nginx
+    environment:
+      TZ: Asia/Shanghai
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+
+  # ============================================================
+  # 以下两项本次不接，置 profiles:[p1] 门控 —— P1/P2 接入时启用
+  # ============================================================
+
+  # 能力 5（配置持久化）/ 能力 6（账本）/ 能力 11（股票池、板块映射）
+  postgres:
+    profiles: ["p1"]
+    image: postgres:17-alpine
+    container_name: mbull-postgres
+    environment:
+      TZ: Asia/Shanghai
+      POSTGRES_DB: mbull
+      POSTGRES_USER: mbull
+      POSTGRES_PASSWORD: change-me
+      PGTZ: Asia/Shanghai
+    # §2.13-2 硬约束：PG 侧 timezone 必须与容器一致，否则 F-203 夜盘归属 / F-302 合约过期判定错
+    command:
+      - postgres
+      - -c
+      - timezone=Asia/Shanghai
+      - -c
+      - log_timezone=Asia/Shanghai
+    volumes:
+      - mbull-pg:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # 任务状态 + 分布式锁 + 行情短 TTL 缓存（§2.11 缓存层）
+  redis:
+    profiles: ["p1"]
+    image: redis:7-alpine
+    container_name: mbull-redis
+    environment:
+      TZ: Asia/Shanghai
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - mbull-redis:/data
+    restart: unless-stopped
+
+volumes:
+  mbull-data:
+  mbull-pg:
+  mbull-redis:

@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "interval_seconds": 900,
+  "align_to_grid": true,
+  "markets": {
+    "stock": {
+      "enabled": false,
+      "strategy": "21",
+      "k_type": "日K",
+      "sessions": [
+        [
+          570,
+          690
+        ],
+        [
+          780,
+          900
+        ]
+      ]
+    },
+    "futures": {
+      "enabled": false,
+      "long": {
+        "enabled": false,
+        "strategy": "期货_多单",
+        "k_type": "日K",
+        "sessions": [
+          [
+            540,
+            615
+          ],
+          [
+            630,
+            690
+          ],
+          [
+            810,
+            900
+          ],
+          [
+            1260,
+            1380
+          ]
+        ]
+      },
+      "short": {
+        "enabled": false,
+        "strategy": "期货_空单",
+        "k_type": "日K",
+        "sessions": [
+          [
+            540,
+            615
+          ],
+          [
+            630,
+            690
+          ],
+          [
+            810,
+            900
+          ],
+          [
+            1260,
+            1380
+          ]
+        ]
+      }
+    }
+  }
+}

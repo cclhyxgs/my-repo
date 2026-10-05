@@ -1,0 +1,34 @@
+{
+  "_说明": "出网代理池配置模板（engine/net_proxy.py）。改名为 proxy.json 放到实际 CONFIG_DIR 才生效；本 .example 文件不会被读取。",
+  "_CONFIG_DIR在哪": "运行 %LOCALAPPDATA%\\M-Bull\\config\\ 或项目 config/ —— 用 tail -1 \"$TEMP/M-Bull_startup.log\" 看 config.py 打印的真值",
+
+  "enabled": false,
+  "mode": "on_failure",
+  "strategy": "round_robin",
+  "proxies": [],
+  "max_fails": 3,
+  "blacklist_sec": 300,
+  "sync_env": false,
+
+  "_字段说明": {
+    "enabled": "false = 完全不走代理（零行为变化，当前默认）",
+    "mode": "on_failure = 先直连、出现失败记录后才走代理（推荐）；always = 全量走代理（本机 IP 已被拉黑时用）",
+    "strategy": "round_robin = 轮换；random = 随机",
+    "proxies": "每个占位符替换成真实代理。示例见下方 _示例",
+    "max_fails": "单个代理连续失败几次后拉黑（<=0 或非数值会回退默认 3）",
+    "blacklist_sec": "拉黑时长秒数（0 = 不拉黑，只钳负值）",
+    "sync_env": "true 时且只有 1 个代理，会写 HTTP_PROXY/HTTPS_PROXY 环境变量（会波及子进程，默认关）"
+  },
+
+  "_示例": [
+    "http://127.0.0.1:7890                —— 本机 Clash / v2rayN（常见端口 7890 / 7897 / 10809）",
+    "http://user:pass@1.2.3.4:8080        —— 带认证的商业隧道入口",
+    "socks5://1.2.3.4:1080                —— 需 PySocks：pip install \"requests[socks]\""
+  ],
+
+  "_为什么需要": "腾讯/新浪的免费行情接口被 WAF 拦时，正确降级顺序是「换出口 IP 重试」→「所有 IP 都失败」→「才冷却整源」。没配代理时退化为冷却整源，5200 只冷扫会整轮停摆。",
+  "_注意": "只让目标抓取走代理。带凭证/密钥的请求（license 校验、webhook 推送）不要走代理，所以 sync_env 默认关闭。",
+  "_临时启用": "不改文件也可以：设环境变量 MBULL_PROXY=\"http://127.0.0.1:7890\"（逗号分隔多个），优先级最高。",
+  "_筛代理": "python audit/_check_proxies.py —— 判据是「能否从目标站拿到预期数据」而非「能否打开网页」。",
+  "_路由验证": "python audit/_verify_proxy_route.py —— 用本地 CONNECT 代理证明确实走了代理（请求成功≠走了代理）。"
+}

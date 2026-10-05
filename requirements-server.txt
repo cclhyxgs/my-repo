@@ -1,0 +1,60 @@
+# ============================================================
+# M-Bull H5 后端服务依赖锁定（骨架期）
+# ============================================================
+# 与根 requirements.txt 分离（B5 / 补充约束 3）：
+#   根 requirements.txt = 桌面版运行时（pywebview / pythonnet）
+#   本文件            = 服务端镜像依赖
+# engine 四值逐字沿用 §2.13-1 硬约束，不新解、不重解。
+# 安装：python -m pip install -r requirements-server.txt
+# ============================================================
+
+# ---- 服务端框架（2026-09-12 定版）----
+# 选型理由：不逐个拍版本，而是让 pip 在「fastapi 约束 pydantic / uvicorn 同生态」下
+# 解析出一组自洽组合后固化，避免三包互相不兼容（B5 要求）。
+#   fastapi 0.141.1  ← 要求 pydantic>=2 且 starlette>=1.0；自动带入 starlette 1.6.0
+#   pydantic 2.13.5  ← fastapi 选定区间内的当前稳定版（配 pydantic-core 2.46.5）
+#   uvicorn[standard] 0.52.4 ← 与 starlette 1.6.0 同代；[standard] 提供 httptools/websockets/watchfiles
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic==2.13.5
+
+# ---- engine 依赖：§2.13-1 硬约束，任何偏离即破坏约束 ----
+# 理由（§2.13 修正版）：① pandas/numpy 的 rolling/ewm/rank 实现细节决定因子值 →
+# 版本漂移会让 z-score 与状态分档跳变（F-301/F-303 输出一致性）；
+# ② matplotlib 决定回测 PNG 字体/布局；③ cryptography 决定凭据加密与 Ed25519 验签。
+pandas==3.0.3
+numpy==2.5.1
+matplotlib==3.11.0
+cryptography==49.0.0
+
+# ---- engine 的其他传递依赖（2026-09-12 F-203 实测发现，原先漏列）----
+# engine/futures_data.py:33 `import requests` —— 服务端取期货/行情必需；
+# 取值来自根 requirements.txt 的既有锁定（桌面运行时同源），不新解版本。
+requests==2.34.2
+# 待定版（B5 口径：无锁定来源则留空）：engine/machine_probe.py 懒加载 psutil，
+# 供 F-502 扫描 worker 的 auto_n_workers() 用；F-203 不触发，故本次不装。
+# psutil==
+
+# ---- P1 接入：能力 5（配置与方案持久化）—— 2026-09-13 定版 ----
+# 选型（F-601/602 存储层）：SQLAlchemy 建模，**生产 PG / 测试 SQLite 同一份仓储代码**。
+#   · 沙箱/CI 无 PG 服务 → 测试 DSN 走 SQLite（sqlite3 内置），业务逻辑（409/版本 CAS/事务回滚）
+#     可真实断言；生产 DSN（MBULL_DATABASE_URL）走 postgresql+psycopg。
+#   · JSON 体用 sqlalchemy.JSON（PG 落 JSONB、SQLite 落 TEXT），CAS 用
+#     `UPDATE ... WHERE version=:expected` 受影响行数判冲突（跨库通用）。
+#   · PG 专属 `SELECT ... FOR UPDATE` 以方言分支实现（本机无 PG，该分支未在本机验证）。
+# ⚠️ server/core/lockfile.py 校验本清单**所有** pin 的已安装版本（非仅 VERIFIABLE）：
+#    在此锁定即必须同时安装，否则 /api/health 返回 503（T3 硬断言）。
+sqlalchemy==2.0.52
+psycopg[binary]==3.3.5
+# F-601：`POST /api/scheme/import` 按 C3 §3.2 走「multipart 文件」→ FastAPI 需要该解析器。
+# ⚠️ 安装名 python-multipart / 导入名 multipart → 必须在 server/core/lockfile.py 的
+#    MODULE_ALIASES 登记，否则锁清单校验会误判「依赖未安装」→ /api/health 503。
+python-multipart==0.0.32
+
+# ---- 仍未接入，留空待 P2 定版（B5）----
+# celery==
+# redis==
+
+# ---- 仅本地验收测试用；部署镜像不装（保持生产镜像最小化）----
+# 本地 venv 实测装过并跑通 T1~T9：pytest==9.1.1 / httpx==0.28.1
+# （pyyaml 6.0.3 由 uvicorn[standard] 带入，测试用于解析 compose）

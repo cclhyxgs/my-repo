@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "channels": {
+    "inapp": {
+      "impl": "InAppNotifier",
+      "display_name": "应用内气泡",
+      "enabled": true
+    },
+    "wechat": {
+      "impl": "WeChatBotNotifier",
+      "display_name": "企业微信机器人",
+      "enabled": false,
+      "credential_key": "wechat_webhook_url"
+    },
+    "dingtalk": {
+      "impl": "DingTalkNotifier",
+      "display_name": "钉钉机器人",
+      "enabled": false,
+      "credential_key": "dingtalk_webhook_url"
+    },
+    "feishu": {
+      "impl": "FeishuNotifier",
+      "display_name": "飞书机器人",
+      "enabled": false,
+      "credential_key": "feishu_webhook_url"
+    }
+  }
+}
