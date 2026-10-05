@@ -1096,7 +1096,6 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
               <span class="title" id="reportPanelTitle">量化分析报告</span>
               <div class="actions">
                 <button class="icon-btn" id="genCardBtn" onclick="generateDecisionCard()" title="生成决策卡（可截图/打印分享）" style="width:auto;height:auto;padding:4px 12px;font-size:11px;border:1px solid rgba(var(--wc),.15);border-radius:6px">生成决策卡</button>
-                <button class="icon-btn" onclick="aiInterpretAnalyze(this)" title="用 DeepSeek 把这份分析结果翻成散户大白话并给出触发条件建议" style="width:auto;height:auto;padding:4px 12px;font-size:11px;margin-left:6px;border:1px solid rgba(127,127,255,.35);border-radius:6px;color:var(--cyan)">AI 解读</button>
               </div>
             </div>
             <div class="quant-report-scroll" id="reportContainer">
@@ -1145,7 +1144,7 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
           </div>
           <div class="card" id="diagnosisResultCard" style="display:none">
             <div class="card-head"><span class="title">诊断结果</span><span class="meta" id="diagnosisTime">--</span>
-              <span style="margin-left:auto"><button class="btn sm" onclick="aiInterpretDiagnosis(this)" title="用 DeepSeek 复盘整体诊断：共性机会、风险、触发条件" style="border:1px solid rgba(127,127,255,.35);color:var(--cyan)">AI 解读</button><button class="btn sm" onclick="copyDiagnosisResult()" style="margin-left:6px">复制结果</button><button class="btn sm" onclick="exportDiagnosisReport()" style="margin-left:6px">导出报告</button></span>
+              <span style="margin-left:auto"><button class="btn sm" onclick="copyDiagnosisResult()" style="margin-left:6px">复制结果</button><button class="btn sm" onclick="exportDiagnosisReport()" style="margin-left:6px">导出报告</button></span>
             </div>
             <div class="card-body">
               <div id="diagContextBar" class="quant-note" style="margin-bottom:12px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--bg-1);border-radius:4px;font-size:11px;line-height:1.8"></div>
@@ -1270,6 +1269,18 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
                   <span class="and-opt-title" style="color:var(--text-3);font-size:10.5px">按触发建仓之上的技术条件叠加过滤，保存后即时生效（无需重扫）</span>
                 </div>
               </div>
+              <!-- 高级专属：财务筛选（扫描时对前 TopN 候选逐票查通达信财务；保存后下次扫描生效） -->
+              <div class="gated-factor" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px">
+                <label style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-size:11px;color:var(--text-2)">
+                  <input type="checkbox" id="scanFinEnabled" style="accent-color:var(--primary)" onchange="onScanFinChange()">财务筛选
+                </label>
+                <span style="font-size:10.5px;color:var(--text-3)">PB≤</span><input class="form-input w-sm" id="scanFinPb" placeholder="不限" title="市净率=现价/每股净资产，排除高估值" style="width:52px;padding:0 6px" oninput="onScanFinChange()">
+                <span style="font-size:10.5px;color:var(--text-3)">PE≤</span><input class="form-input w-sm" id="scanFinPe" placeholder="不限" title="市盈率=总市值/净利润（单期口径，仅净利为正的票可比）" style="width:52px;padding:0 6px" oninput="onScanFinChange()">
+                <span style="font-size:10.5px;color:var(--text-3)">市值≥</span><input class="form-input w-sm" id="scanFinMcap" placeholder="亿" title="总市值=现价×总股本，单位亿元" style="width:56px;padding:0 6px" oninput="onScanFinChange()">
+                <span style="font-size:10.5px;color:var(--text-3)">EPS≥</span><input class="form-input w-sm" id="scanFinEps" placeholder="不限" title="每股收益=净利润/总股本（单期口径）" style="width:52px;padding:0 6px" oninput="onScanFinChange()">
+                <span style="font-size:10.5px;color:var(--text-3)">负债率≤</span><input class="form-input w-sm" id="scanFinDebt" placeholder="%" title="资产负债率=(流动+长期负债)/总资产" style="width:52px;padding:0 6px" oninput="onScanFinChange()">
+                <span style="font-size:10.5px;color:var(--text-2)">对前N名候选逐票查财务，<strong>保存后下次扫描生效</strong></span>
+              </div>
               <div class="form-row" style="margin-top:8px;gap:8px;align-items:center;display:none" id="scanKTypeRow">
                 <span style="font-size:11px;color:var(--text-2)">分析方案：</span>
                 <select class="form-select" id="scanKTypeSelect" style="min-width:100px">
@@ -1291,7 +1302,7 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
           </div>
           <div class="subpane active" id="scan-result">
             <div class="card" style="margin-bottom:0">
-              <div class="card-head"><span class="title">扫描结果</span><span class="meta" id="scanSortMeta">按因子预期降序</span><span style="margin-left:auto;font-size:11px;color:var(--primary);font-weight:600" id="scanSchemeMeta"></span><button class="btn sm" onclick="aiInterpretScan(this)" title="用 DeepSeek 概括这批机会的共性与风险，并给出筛选条件改进建议" style="margin-left:8px;border:1px solid rgba(127,127,255,.35);color:var(--cyan)">AI 解读</button></div>
+              <div class="card-head"><span class="title">扫描结果</span><span class="meta" id="scanSortMeta">按因子预期降序</span><span style="margin-left:auto;font-size:11px;color:var(--primary);font-weight:600" id="scanSchemeMeta"></span></div>
               <div class="card-body" style="padding:0">
                 <table class="tbl"><thead><tr><th>#</th><th>代码</th><th>名称</th><th>现价</th><th>因子预期</th><th>分位</th><th>评级</th><th>板块</th></tr></thead><tbody id="scanTbody"></tbody></table>
               </div>
@@ -1771,12 +1782,6 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
             </div>
           </div>
 
-          <!-- 风险偏好测评不在此页常驻：它属于「设置 / AI 解读 → 生成新策略」的流程，
-               由 aiSchemeApply 弹出弹窗（window.riskProfileDialog）并落成一个**新方案**。
-               ⛔ 历史教训：这里曾放过一张常驻卡片 + 「写入当前方案」按钮，任何方案（含用户
-               调好的老方案）都能被一键覆盖 risk_params / entry_params.positions /
-               tech_resonance.threshold —— 2026-09-27 用户拍板改为只在生成新策略时弹测评。 -->
-
           <!-- 底部按钮 -->
           <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0 0;margin-top:8px;flex-shrink:0;border-top:1px solid rgba(var(--wc),0.08)">
             <div style="display:flex;gap:10px">
@@ -1822,9 +1827,6 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
             </div>
             <div class="settings-subtab" data-tab="usage" onclick="switchSettingsTab('usage')">
               <svg style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"><use href="#i-gauge"/></svg>用法设置
-            </div>
-            <div class="settings-subtab" data-tab="ai" onclick="switchSettingsTab('ai')">
-              <svg style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"><use href="#i-bell"/></svg>AI 解读
             </div>
           </div>
 
@@ -2031,42 +2033,6 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
               </div>
             </div>
           </div>
-
-          <!-- 子页签：AI 解读 -->
-          <div class="settings-panel" id="panel-ai">
-            <style>
-              .ai-card .intro{font-size:11.5px;color:var(--text-2);line-height:1.7;margin-bottom:12px}
-              .ai-card .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-              .ai-card .fake-label{font-size:11px;color:var(--text-2);min-width:58px}
-              .ai-card textarea{width:100%;min-height:76px;box-sizing:border-box;padding:10px 12px;background:#0d0d14;border:1px solid rgba(var(--wc),0.25);border-radius:8px;color:var(--text-0);font-size:12px;line-height:1.7;resize:vertical;outline:none;font-family:var(--font-head)}
-            </style>
-            <div class="card ai-card">
-              <div class="card-head"><span class="title">AI 解读（DeepSeek）</span>
-                <div class="actions"><button class="btn primary" onclick="openAiConfigModal()">配置模型</button></div>
-              </div>
-              <div class="card-body">
-                <div class="intro">用大白话把个股分析 / 自选诊断 / 全市场扫描 / 纪律情绪复盘翻给散户听，并给出可执行的触发条件与纪律改善建议。需先配置 DeepSeek API Key 才能用。</div>
-                <div class="row">
-                  <span class="fake-label">配置状态</span>
-                  <span id="aiConfigStatus" style="font-size:12px;color:var(--text-2)">读取中…</span>
-                  <button class="btn sm" onclick="refreshAiConfigStatus()">刷新</button>
-                </div>
-                <div class="intro" style="margin-bottom:6px"><b>生成新策略</b>：用一句话描述想要的选股/过滤条件（如「RSI 大于 80 且均线多头排列」）。点「生成新策略」后会先做一次<b>风险偏好测评</b>（十道题 → 仓位 / 止损档位），再连同 AI 翻译出的筛选条件一起落成一个<b>新方案</b>——<b>当前方案不会被改动</b>。只想先看 AI 会翻译成什么条件，用「仅预览」。</div>
-                <textarea id="aiSchemeText" placeholder="例：我想过滤掉 RSI 超过 95 的过热票，只保留 60 日线多头排列、且量比大于 1.5 的"></textarea>
-                <div class="row" style="margin-top:10px;margin-bottom:0">
-                  <button class="btn primary" onclick="aiSchemeApply()">生成新策略</button>
-                  <button class="btn sm" onclick="aiSchemePreview()">仅预览</button>
-                  <span style="font-size:10.5px;color:var(--text-3)" id="aiSchemeNote"></span>
-                </div>
-                <div class="intro" style="margin-top:16px;margin-bottom:6px"><b>审我的方案</b>：AI 用量化常识检查<b>当前方案</b>的设计是否自洽——因子有没有重复押注、目标是否互相冲突、止损与策略风格是否匹配、有没有风控缺口。<b>只审设计，不预测收益</b>，也不需要回测数据。</div>
-                <textarea id="aiReviewText" placeholder="（可选）你想追问的问题，例：我这套方案的止损会不会设得太紧？留空则做完整检查"></textarea>
-                <div class="row" style="margin-top:10px;margin-bottom:0">
-                  <button class="btn primary" onclick="aiSchemeReview()">审查当前方案</button>
-                  <span style="font-size:10.5px;color:var(--text-3)" id="aiReviewNote"></span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
       <section class="view" id="view-about">
@@ -2104,7 +2070,7 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
           <div id="discExecPanel" class="sub-panel">
           <div class="card">
             <div class="card-head"><span class="title">执行与复盘闭环</span><span class="meta" id="discMeta"></span>
-              <span style="margin-left:auto"><span class="weak" style="font-size:11px;margin-right:8px">触发价＝信号出现时锁定 · 现价＝点按钮拉最新（盘后为收盘价）</span><button class="btn sm" onclick="aiInterpretLedger(this)" title="用 DeepSeek 复盘你的纪律/情绪画像：赚没赚到系统该给的利润、情绪化偏差多大、怎么改善" style="border:1px solid rgba(127,127,255,.35);color:var(--cyan)">AI 复盘</button><button class="btn sm primary" onclick="refreshSignalPrices()" style="margin-left:8px">刷新现价</button></span>
+              <span style="margin-left:auto"><span class="weak" style="font-size:11px;margin-right:8px">触发价＝信号出现时锁定 · 现价＝点按钮拉最新（盘后为收盘价）</span><button class="btn sm primary" onclick="refreshSignalPrices()" style="margin-left:8px">刷新现价</button></span>
             </div>
             <div class="card-body">
               <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
@@ -2142,11 +2108,11 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
                 <div id="discAttrHeadline" style="font-size:12px;color:var(--text-0);line-height:1.7;margin-bottom:10px">--</div>
                 <div id="discAttrTable" style="overflow-x:auto"></div>
               </div>
-              <!-- 模式识别（F-1107）：跨维度舒适区。样本门槛：每类≥3条、至少2类达标 -->
+              <!-- 模式识别（F-1107）：舒适区。样本门槛：每类≥3条、至少2类达标 -->
               <div id="discPattern" style="padding:12px 14px;border-radius:8px;border:1px solid rgba(var(--wc),0.12);background:rgba(var(--wc),0.04);margin-bottom:14px">
                 <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap">
                   <span style="font-size:11px;color:var(--cyan);letter-spacing:.04em;font-weight:700">模式识别 · 你的舒适区</span>
-                  <span class="weak" style="font-size:10px">按信号类型/市场分桶 · 每类≥3条且至少2类达标才出结论</span>
+                  <span class="weak" style="font-size:10px">按信号类型分桶 · 每类≥3条且至少2类达标才出结论</span>
                 </div>
                 <div id="discPatternHeadline" style="font-size:12px;color:var(--text-0);line-height:1.7;margin-bottom:10px">--</div>
                 <div id="discPatternTable" style="overflow-x:auto"></div>
@@ -2303,6 +2269,7 @@ function switchView(name){
       setTimeout(fillScanTable,50);setTimeout(fillSectorGrid,50);
     }
     if(window.renderScanFilterChips) setTimeout(window.renderScanFilterChips, 0);
+    if(window.fillScanFinanceEditor) setTimeout(window.fillScanFinanceEditor, 0);
   }
   if(name==='quant') setTimeout(()=>{ fillQuantGrids(); resizeBtCharts(); },50);
   if(name==='watchlist') setTimeout(()=>{if(window.loadWatchlist)window.loadWatchlist();},50);
@@ -2350,7 +2317,6 @@ window.switchSettingsTab = function(tab){
     else if(tab === 'datasource') { setTimeout(loadDataSourceConfig, 0); setTimeout(loadFuturesDataSourceConfig, 0); }
     else if(tab === 'monitor') setTimeout(loadMonitorConfig, 0);
     else if(tab === 'usage') setTimeout(loadUsageConfig, 0);
-    else if(tab === 'ai') setTimeout(window.refreshAiConfigStatus, 0);
   }
 }
 
@@ -4231,6 +4197,42 @@ function addScanFilterIndicator(){
   const ind = document.getElementById('scanFilterInd'); if(ind) ind.value='';
   const opEl = document.getElementById('scanFilterOp'); if(opEl) opEl.value='';
 }
+// ———— 全市场扫描·财务筛选（高级专属，2026-10-06） ————
+// 扫描完成时对前 TopN 候选逐票查通达信财务：爆雷硬剔除（每股净资产/净利<0）
+// + 可配置阈值（PB/PE/总市值/EPS/资产负债率）。随方案保存（scanFinanceFilter，
+// config_mapper <-> scan_finance_filter）；因财务须联网逐票查，**下次扫描时生效**（非即时）。
+function _scanFinTarget(){
+  if(!quantData.scanFinanceFilter || typeof quantData.scanFinanceFilter !== 'object'){
+    quantData.scanFinanceFilter = {enabled:true, pb_max:null, pe_max:null, mcap_min:null, eps_min:null, debt_ratio_max:null};
+  }
+  return quantData.scanFinanceFilter;
+}
+function _scanFinNum(el){
+  const s = el ? el.value.trim() : '';
+  if(s === '') return null;
+  const n = parseFloat(s);
+  return isNaN(n) ? null : n;
+}
+function fillScanFinanceEditor(){
+  const t = _scanFinTarget();
+  const en = document.getElementById('scanFinEnabled'); if(en) en.checked = t.enabled !== false;
+  [['scanFinPb','pb_max'],['scanFinPe','pe_max'],['scanFinMcap','mcap_min'],
+   ['scanFinEps','eps_min'],['scanFinDebt','debt_ratio_max']].forEach(([id,k])=>{
+    const el = document.getElementById(id);
+    if(el) el.value = (t[k] === null || t[k] === undefined) ? '' : String(t[k]);
+  });
+}
+function onScanFinChange(){
+  const t = _scanFinTarget();
+  const en = document.getElementById('scanFinEnabled'); if(en) t.enabled = en.checked;
+  [['scanFinPb','pb_max'],['scanFinPe','pe_max'],['scanFinMcap','mcap_min'],
+   ['scanFinEps','eps_min'],['scanFinDebt','debt_ratio_max']].forEach(([id,k])=>{
+    t[k] = _scanFinNum(document.getElementById(id));
+  });
+  markConfigDirty();
+}
+window.fillScanFinanceEditor = fillScanFinanceEditor;
+
 // 全市场扫描「筛选条件」统一应用入口（唯一按钮，2026-10-05 合并原「应用」与「应用筛选」）：
 //   先落盘技术指标筛选配置（二级过滤靠配置生效），再按分数/评级/涨幅/技术条件统一过滤。
 //   未绑定方案或保存失败时**只提示不阻断**——分数/评级/涨幅筛选不依赖配置，
@@ -4755,242 +4757,6 @@ window.showPromptDialog = function(title, defaultValue){ return window._mbullMod
 window.showConfirmDialog = function(title, message, danger){ return window._mbullModal({title: title, message: message, danger: !!danger}); };
 window.showChoiceDialog = function(title, message, choices, cancelLabel){
   return window._mbullModal({title: title, message: message, choices: choices, cancelLabel: cancelLabel});
-};
-
-// ═══════════════════════════════════════════════════════════
-// AI 解读（DeepSeek）：配置 + 弹窗 + 四场景入口
-// ═══════════════════════════════════════════════════════════
-window._aiCfg = null;
-// AI 生成中标记：防连点（连点会让多个请求并发挤同一个 API Key，上游更慢 → 集体超时）
-window._aiRunning = false;
-// 按钮忙碌态切换（AI 生成本来要 10~60 秒，期间必须让用户看见"在跑"，否则会被当成点了没反应）
-window._aiBtnState = function(btn, on, busyLabel){
-  try{
-    if(!btn || !btn.tagName) return;
-    if(on){
-      if(btn.dataset.aiOldLabel === undefined) btn.dataset.aiOldLabel = btn.innerHTML;
-      btn.disabled = true;
-      btn.style.opacity = '0.6';
-      btn.style.cursor = 'wait';
-      btn.innerHTML = busyLabel || '⏳ 生成中…';
-    }else{
-      btn.disabled = false;
-      btn.style.opacity = '';
-      btn.style.cursor = '';
-      if(btn.dataset.aiOldLabel !== undefined){ btn.innerHTML = btn.dataset.aiOldLabel; delete btn.dataset.aiOldLabel; }
-    }
-  }catch(e){ /* 按钮态只是锦上添花，绝不因为改样式失败而中断 AI 调用 */ }
-};
-window.ensureAiConfig = async function(){
-  if(window._aiCfg) return window._aiCfg;
-  try{
-    const r = await window.api.ai_get_config();
-    if(r && !r.error){ window._aiCfg = r; return r; }
-  }catch(e){}
-  return {configured:false};
-};
-// 打开「模型配置」：填 Key + 选模型（复用自定义 modal，避免 WebView2 原生弹窗兼容问题）
-window.openAiConfigModal = async function(){
-  const cur = await window.ensureAiConfig();
-  const key = await window.showPromptDialog('DeepSeek 模型配置', '请输入 API Key（sk-…）。\n留空则仅保留原 Key／切换模型保存。');
-  if(key === null) return;
-  let model = 'deepseek-flash';
-  const pick = await window.showChoiceDialog('选择对话模型',
-    '默认 deepseek-flash（响应快、省 token，适合日常解读）。',
-    [{label:'deepseek-flash（推荐，快）', value:'deepseek-flash'},{label:'deepseek-v4-pro（更强）', value:'deepseek-v4-pro'}],
-    '取消');
-  if(pick) model = pick;
-  try{
-    const r = await window.api.ai_save_config(key, model);
-    if(r && r.error){ showToast('保存失败：' + r.error, 'error'); return; }
-    window._aiCfg = {configured:!!r.configured, model:r.model, enabled:!!r.configured};
-    showToast(r.configured ? '模型已启用，可点任意「AI 解读」' : '已保存（尚未填写 Key，AI 解读仍不可用）', r.configured ? 'success' : 'warn');
-  }catch(e){ showToast('保存失败：' + e, 'error'); }
-};
-// AI 结果卡片化：解析个股审查（sa3）的行协议 `§类型|字段1|字段2`
-// ⛔ 返回值：成功则返回卡片 HTML；**解析不出 §行 时返回 null，调用方回落为纯文本渲染**
-//    （DeepSeek-flash 存在格式漂移，回落路径必须保留，否则输出会直接变成空白）
-window._renderAiCards = function(text){
-  const S = '\u00a7';
-  const esc = function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
-  const lines = String(text||'').split(/\r?\n/);
-  const g = {head:null, verdict:[], falsify:[], cost:[], blind:[], tip:[]};
-  let hit = 0;
-  for(let i=0;i<lines.length;i++){
-    let ln = (lines[i]||'').trim();
-    if(!ln) continue;
-    if(ln.indexOf('```') === 0) continue;                    // 模型常用 markdown 围栏包裹
-    ln = ln.replace(/^([-*#>]|\d+[.、)])\s*/, '').trim();      // 列表符 / # / 引用号
-    if(ln.charAt(0) !== S){ g.tip.push(ln); continue; }
-    const p = ln.slice(1).split('|');
-    const k = (p[0]||'').trim();
-    const a = (p[1]||'').trim(), b = (p[2]||'').trim();
-    hit++;
-    if(k === '结论'){ g.head = {t:a, s:b, v:(p[3]||'').trim()}; }
-    else if(k === '裁决'){ g.verdict.push([a,b]); }
-    else if(k === '证伪'){ g.falsify.push([a,b]); }
-    else if(k === '代价'){ g.cost.push([a,b]); }
-    else if(k === '盲区'){ g.blind.push([a,b]); }
-    else if(k === '提示'){ g.tip.push(a + (b ? '　' + b : '')); }
-    else { g.tip.push(ln.slice(1)); }
-  }
-  if(!hit || !g.head) return null;
-
-  const box = function(inner){
-    return '<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px">'+inner+'</div>';
-  };
-  const lbl = function(t){ return '<div style="font-size:11px;color:var(--text-2);margin-bottom:8px">'+esc(t)+'</div>'; };
-  const kv = function(a,b,w){
-    return '<div style="display:flex;gap:10px;align-items:baseline;padding:4px 0">'+
-      '<span style="flex:none;width:'+(w||70)+'px;font-weight:600;color:var(--text-0);font-variant-numeric:tabular-nums">'+esc(a)+'</span>'+
-      '<span style="flex:1;font-size:12px;color:var(--text-1);line-height:1.5">'+esc(b)+'</span></div>';
-  };
-
-  let h = '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px">'+
-    '<span style="font-size:15px;font-weight:600;color:var(--text-0)">'+esc(g.head.t)+'</span>'+
-    '<span style="font-size:12px;color:var(--text-2)">'+esc(g.head.s)+'</span>'+
-    (g.head.v ? '<span style="margin-left:auto;background:rgba(255,176,32,.14);color:#ffb020;font-size:12px;padding:3px 10px;border-radius:6px">'+esc(g.head.v)+'</span>' : '')+
-    '</div>';
-
-  if(g.verdict.length){
-    h += '<div style="margin-bottom:10px">'+box(lbl('矛盾裁决 · '+g.verdict.length+' 条')+g.verdict.map(function(x){
-      return '<div style="display:flex;gap:10px;align-items:baseline;padding:5px 0;border-top:1px solid rgba(255,255,255,.06)">'+
-        '<span style="flex:1;font-size:13px;color:var(--text-1);line-height:1.5">'+esc(x[0])+'</span>'+
-        '<span style="flex:none;max-width:44%;font-size:12px;color:#ffb020;text-align:right;line-height:1.5">'+esc(x[1])+'</span></div>';
-    }).join(''))+'</div>';
-  }
-
-  const two = [];
-  if(g.falsify.length) two.push(box(lbl('证伪条件')+g.falsify.map(function(x){ return kv(x[0],x[1]); }).join('')));
-  if(g.cost.length)    two.push(box(lbl('最坏代价')+g.cost.map(function(x){ return kv(x[0],x[1]); }).join('')));
-  if(two.length) h += '<div style="display:grid;grid-template-columns:'+(two.length>1?'1fr 1fr':'1fr')+';gap:10px;margin-bottom:10px">'+two.join('')+'</div>';
-
-  if(g.blind.length){
-    const nHit = g.blind.filter(function(x){ return !(x[0]==='无' || x[0].indexOf('未命中')>=0); }).length;
-    h += '<div style="margin-bottom:10px">'+box(lbl('盲区 · 命中 '+nHit+' 项')+g.blind.map(function(x){
-      const none = (x[0]==='无' || x[0].indexOf('未命中')>=0);
-      return '<div style="display:flex;gap:8px;padding:4px 0'+(none?';opacity:.75':'')+'">'+
-        (none ? '' : '<span style="flex:none;background:rgba(255,86,86,.16);color:#ff6b6b;font-size:11px;padding:1px 7px;border-radius:5px;height:fit-content">'+esc(x[0])+'</span>')+
-        '<span style="flex:1;font-size:12px;color:var(--text-1);line-height:1.5">'+esc(none ? (x[0]+'：'+x[1]) : x[1])+'</span></div>';
-    }).join(''))+'</div>';
-  }
-
-  if(g.tip.length){
-    h += '<div style="font-size:12px;color:var(--text-2);line-height:1.6;border-top:1px solid rgba(255,255,255,.08);padding-top:10px">'+g.tip.map(esc).join('<br>')+'</div>';
-  }
-  return h;
-};
-
-// AI 结果弹窗：滚动正文 + 复制按钮
-window.openAiResultDialog = function(title, text){
-  const esc = function(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
-  // sa3 行协议命中则渲染卡片，否则回落纯文本（格式漂移 / 扫描·复盘·方案审查等场景走这条路径）
-  const _cardsHtml = window._renderAiCards(text) || '';
-  let el = document.getElementById('mbullAiResult');
-  if(!el){
-    el = document.createElement('div'); el.id='mbullAiResult';
-    el.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;z-index:100001;background:rgba(0,0,0,0.62)';
-    document.body.appendChild(el);
-  }
-  el.innerHTML =
-    '<div style="background:#16161e;border:1px solid rgba(var(--wc),0.3);border-radius:12px;width:min(720px,92vw);max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,0.65)">' +
-    '<div style="padding:14px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(var(--wc),0.12);flex-shrink:0"><span style="font-size:14px;font-weight:600;color:var(--text-0);font-family:var(--font-head)">AI · '+esc(title)+'</span><span style="margin-left:auto;display:flex;gap:6px">' +
-    '<button class="btn sm" id="mbullAiCopy">复制</button>' +
-    '<button class="btn sm primary" id="mbullAiClose">关闭</button></span></div>' +
-    '<div id="mbullAiBody" style="padding:16px 18px;overflow:auto;color:var(--text-0);font-size:13px;line-height:1.85'+(_cardsHtml?'':';white-space:pre-wrap')+'">'+(_cardsHtml||esc(text||'（无内容）'))+'</div>' +
-    '</div>';
-  el.style.display='flex';
-  el.querySelector('#mbullAiClose').onclick=function(){ el.style.display='none'; };
-  el.querySelector('#mbullAiCopy').onclick=function(){
-    const body=document.getElementById('mbullAiBody').innerText;
-    const ta=document.createElement('textarea'); ta.value=body; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta);
-    ta.select();
-    try{ navigator.clipboard.writeText(body).then(()=>showToast('已复制')).catch(()=>{ document.execCommand('copy'); showToast('已复制'); }); }catch(e){ try{ document.execCommand('copy'); showToast('已复制'); }catch(e2){} }
-    document.body.removeChild(ta);
-  };
-  el.onclick=function(e){ if(e.target===el) el.style.display='none'; };
-};
-// 通用运行入口：未配置 → 引导去配置；否则调用 fn() 取 {text}
-// btn = 触发按钮（各入口传 this），用于生成期间显示忙碌态 —— AI 走推理模型，
-// 个股分析投喂接近 _dump 上限（20000 字）时真实耗时可达数十秒，没有等待反馈
-// 用户只会得出「点了没反应」的结论，然后连点，把上游一起拖垮。
-window.runAiScene = async function(title, fn, btn){
-  if(window._aiRunning){
-    showToast('AI 正在生成中，请稍候再点（约 10~60 秒）', 'warn');
-    setStatus('🤖 ' + title + ' 生成中，请勿重复点击');
-    return;
-  }
-  window._aiRunning = true;
-  const _fail = function(msg){
-    // 失败同时写 toast 与状态栏：toast 在页面底部、几秒淡出，容易被漏看
-    showToast('AI 解读失败：' + msg, 'error');
-    setStatus('❌ AI 解读失败：' + msg);
-  };
-  try{
-    const cfg = await window.ensureAiConfig();
-    if(!cfg.configured){
-      showToast('请先到「设置 / 模型配置」填写 DeepSeek API Key 再生成解读', 'warn');
-      setStatus('AI 未配置：请先到「设置 / 模型配置」填写 DeepSeek API Key');
-      return;
-    }
-    window._aiBtnState(btn, true);
-    setStatus('🤖 ' + title + ' 生成中…（约 10~60 秒，请勿重复点击）');
-    try{
-      const r = await fn();
-      if(r && r.error){ _fail(r.error); return; }
-      if(r && r.text){
-        window.openAiResultDialog(title, r.text);
-        setStatus('✅ ' + title + ' 已生成');
-      }else{
-        showToast('AI 未返回内容，请重试', 'warn');
-        setStatus('⚠️ AI 未返回内容，请重试');
-      }
-    }catch(e){
-      _fail((e && e.message) ? e.message : e);
-    }
-  }catch(e){
-    // ⛔ ensureAiConfig 抛错（如 window.api 未就绪）原本在 try 之外 ——
-    //    async 函数里等于未处理的 Promise rejection：不弹提示、不写状态栏、日志都留不下
-    _fail((e && e.message) ? e.message : e);
-  }finally{
-    window._aiBtnState(btn, false);
-    window._aiRunning = false;
-  }
-};
-// 四场景入口
-window.aiInterpretAnalyze = function(btn){
-  const res = window._lastAnalyzeResult;
-  if(!res || res.error){ showToast('请先在顶部查询并生成分析报告，再点「AI 解读」', 'warn'); return; }
-  window.runAiScene('个股分析解读', ()=> window.api.ai_analyze(res), btn);
-};
-window.aiInterpretDiagnosis = function(btn){
-  const rows = window._lastDiagnosisResults;
-  if(!rows || !rows.length){ showToast('请先运行自选诊断，再点「AI 解读」', 'warn'); return; }
-  // 持仓体检视角（原先用 ai_scan，拿到的是候选池筛选视角，与"已持有的票怎么处理"不符）
-  // ⛔ 结果行真实字段见 web_api.diagnose_watchlist：factorScore / triggeredConditions /
-  //    entry_price / bars_held / pnl / direction / stockCurrentType。
-  //    该结果行【没有】stars 与 sector（那是全市场扫描才有的字段），旧映射传过去恒为 null。
-  window.runAiScene('自选诊断解读', ()=> window.api.ai_diagnosis_batch(rows.map(function(r){
-    return {code:r.code, name:r.name, price:r.price,
-            final_score:('factorScore' in r && r.factorScore!=null)?Number(r.factorScore):null,
-            category:(r.category && r.category!=='error')?r.category:null,
-            entry_tier_label:(r.positionAllocation||r.category),
-            reason:(r.triggeredConditions||r.advice||r.error||''),
-            // ↓ 持仓三件套：用户填的成本价 + 引擎算出的浮盈，不传则 AI 无从判断盈亏
-            entry_price:(r.entry_price!=null?Number(r.entry_price):null),
-            bars_held:(r.bars_held!=null?Number(r.bars_held):null),
-            pnl:r.pnl||null, direction:r.direction||null,
-            stockCurrentType:r.stockCurrentType||null};
-  })), btn);
-};
-window.aiInterpretScan = function(btn){
-  const rows = window._scanResultsCache;   // renderScanResults 里同步到 window，跨闭包可读
-  if(!rows || !rows.length){ showToast('请先扫描出结果，再点「AI 解读」', 'warn'); return; }
-  window.runAiScene('扫描概览解读', ()=> window.api.ai_scan(rows), btn);
-};
-window.aiInterpretLedger = function(btn){
-  const m = window._discMarket || 'all';
-  window.runAiScene('纪律/情绪复盘', ()=> window.api.ai_ledger(m), btn);
 };
 
 // ═══ L4 通知设置（用户可配置渠道）═══
@@ -5895,7 +5661,6 @@ function initPyWebViewApi(){
       if(result.reportData){
         Object.assign(reportData, result.reportData);
       }
-      window._lastAnalyzeResult = result;   // 供「AI 解读」按钮消费（避免二次跑 pipeline 落纪律）
       if(cost > 0){ renderPositionReport(); }else{ renderDecisionReport(); }
       // 量化分析后，把分析周期同步到K线面板独立下拉，保持两者一致
       const _klinePSel = document.getElementById('klinePeriodSelect');
@@ -6069,227 +5834,6 @@ function initPyWebViewApi(){
       }
     }
     switchView('analysis');
-  };
-
-  // ———— AI 自然语言 → 方案筛选条件（复用 scan_tech_filter，保存后即时生效） ————
-  window.refreshAiConfigStatus = async function(){
-    const s = document.getElementById('aiConfigStatus');
-    try{
-      const cfg = await window.ensureAiConfig();
-      if(!cfg || !cfg.configured){ if(s) s.innerHTML='<span style="color:var(--warn)">未配置 Key（AI 解读不可用）</span>'; return; }
-      if(s) s.innerHTML='<span style="color:var(--up)">已启用</span> · 模型：'+(cfg.model||'deepseek-flash');
-    }catch(e){ if(s) s.innerHTML='读取失败'; }
-  };
-  function aiSchemeFmtCondLabel(c){
-    if(!c) return '';
-    if(c.signal !== undefined) return String(c.signal);
-    if(c.indicator !== undefined){
-      let lb = (typeof IND_LABELS !== 'undefined' && (IND_LABELS[c.indicator] || CUSTOM_IND_LABELS[c.indicator])) || c.indicator;
-      return lb + ' ' + c.op + ' ' + c.value;
-    }
-    return JSON.stringify(c);
-  }
-  window.aiSchemeFetch = async function(){
-    const cfg = await window.ensureAiConfig();
-    if(!cfg || !cfg.configured){ showToast('请先到「设置 / AI 解读」配置 DeepSeek API Key', 'warn'); return null; }
-    const text = ((document.getElementById('aiSchemeText')||{}).value||'').trim();
-    if(!text){ showToast('请输入要配置的自然语言描述', 'warn'); return null; }
-    try{
-      const r = await window.api.ai_scheme_conditions(text);
-      if(r && r.error){ showToast('AI 解析失败：' + r.error, 'error'); return null; }
-      return r;
-    }catch(e){ showToast('AI 调用失败：' + e, 'error'); return null; }
-  };
-  window.aiSchemePreview = async function(){
-    const r = await window.aiSchemeFetch();
-    if(!r) return;
-    const arr = (r.filters||[]).map(aiSchemeFmtCondLabel).join('　') || '（无筛选条件）';
-    const tw = Object.keys(r.factor_tweaks||{}).length
-      ? Object.entries(r.factor_tweaks||{}).map(function(x){ return x[0] + '=' + x[1]; }).join(', ') : '（无）';
-    const uns = (r.unsupported||[]).length ? r.unsupported.join('、') : '（无）';
-    window.openAiResultDialog('自然语言配筛选 · 预览',
-      '将加入「技术指标筛选/AND 条件」：\n'+arr+
-      '\n\nAI 建议的权重倾向因子（仅供参考，需到权重页手工微调）：\n'+tw+
-      '\n\n当前工具暂不支持、已忽略的条件：\n'+uns);
-  };
-  // ———— AI 审查当前方案（只审设计、不预测收益；不依赖回测数据）————
-  window.aiSchemeReview = async function(){
-    const cfg = await window.ensureAiConfig();
-    if(!cfg || !cfg.configured){ showToast('请先到「设置 / AI 解读」配置 DeepSeek API Key', 'warn'); return; }
-    const q = ((document.getElementById('aiReviewText')||{}).value||'').trim();
-    const note = document.getElementById('aiReviewNote');
-    if(note) note.textContent = '审查中…约 10~30 秒';
-    try{
-      const r = await window.api.ai_scheme_review(q || null);
-      if(note) note.textContent = '';
-      if(r && r.error){ showToast('AI 审查失败：' + r.error, 'error'); return; }
-      window.openAiResultDialog('方案审查 · ' + (r.scheme_name || '当前方案'),
-        r.text || '（AI 未返回内容）');
-    }catch(e){
-      if(note) note.textContent = '';
-      showToast('AI 调用失败：' + e, 'error');
-    }
-  };
-  // ———— 风险偏好测评弹窗（十题 → 四档风控参数；映射在引擎纯函数，不经过 AI）————
-  // ⛔ 只由「生成新策略」（aiSchemeApply）触发，结果落成一个**新方案**：
-  //    测评会整套覆盖 risk_params 6 项 / entry_params.positions 4 档 / tech_resonance.threshold，
-  //    若写成"改当前方案"，用户调好的老方案会被一键覆盖（2026-09-27 用户拍板：必须新建方案）。
-  // ⛔ 显式挂 window：脚本内的 function 声明不会成为 window 属性，跨块调用拿不到。
-  window.riskProfileDialog = function(){
-    return new Promise(function(resolve){
-      const wrap = document.createElement('div');
-      wrap.id = 'riskProfileModal';
-      wrap.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:100001;background:rgba(0,0,0,0.62);display:flex;align-items:center;justify-content:center;padding:24px';
-      wrap.innerHTML =
-        '<div style="background:#16161e;border:1px solid rgba(var(--wc),0.3);border-radius:12px;padding:20px;width:620px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 18px 60px rgba(0,0,0,0.65)">' +
-          '<div style="font-size:15px;font-weight:600;color:var(--text-0);font-family:var(--font-head)">风险偏好测评</div>' +
-          '<div style="font-size:11.5px;color:var(--text-2);line-height:1.75;margin:8px 0 10px">十道题，把「仓位 / 止损 / 时间止损」定成一个互相自洽的档位。映射由预设档位表完成，<b>不经过 AI</b>，同样答案永远得到同样档位。提交后会生成一个<b>新方案</b>，当前方案不受影响。</div>' +
-          '<div id="rpModalBody" style="flex:1;overflow:auto;padding-right:6px"></div>' +
-          '<div id="rpModalNote" style="font-size:11px;color:var(--warn);margin-top:8px;min-height:15px"></div>' +
-          '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">' +
-            '<button class="btn sm" id="rpModalCancel">取消</button>' +
-            '<button class="btn sm primary" id="rpModalOk">提交，生成新方案</button>' +
-          '</div>' +
-        '</div>';
-      document.body.appendChild(wrap);
-      const body = wrap.querySelector('#rpModalBody');
-      const note = wrap.querySelector('#rpModalNote');
-      let qs = null;
-      const finish = function(v){ try{ wrap.remove(); }catch(_){} resolve(v); };
-      const render = function(list){
-        let html = '', lastGroup = '';
-        list.forEach(function(q,i){
-          if(q.group && q.group !== lastGroup){
-            lastGroup = q.group;
-            html += '<div style="font-size:11px;color:var(--text-3);margin:10px 0 2px;letter-spacing:.5px">'+q.group+'</div>';
-          }
-          html += '<div style="padding:9px 0;border-bottom:1px solid rgba(var(--wc),0.07)">'
-               +  '<div style="font-size:12.5px;font-weight:600;color:var(--text-0);margin-bottom:6px">'+(i+1)+'. '+q.text
-               +  '<span style="font-size:10px;color:var(--text-3);font-weight:400;margin-left:6px">'+q.drives+'</span></div>';
-          (q.options||[]).forEach(function(o,j){
-            html += '<label style="display:block;font-size:12px;color:var(--text-1);padding:3px 0;cursor:pointer">'
-                 +  '<input type="radio" name="'+q.id+'" value="'+j+'" style="margin-right:6px">'+o.label+'</label>';
-          });
-          html += '</div>';
-        });
-        body.innerHTML = html;
-      };
-      wrap.querySelector('#rpModalCancel').onclick = function(){ finish(null); };
-      wrap.querySelector('#rpModalOk').onclick = function(){
-        if(!qs){ note.textContent = '题目尚未加载完成，请稍候'; return; }
-        const ans = {};
-        const picked = body.querySelectorAll('input[type=radio]:checked');
-        for(let i=0;i<picked.length;i++){ ans[picked[i].name] = parseInt(picked[i].value,10); }
-        const miss = qs.filter(function(q){ return ans[q.id] === undefined; });
-        if(miss.length){
-          const idx = miss.map(function(q){ return qs.indexOf(q)+1; });
-          note.textContent = '还有 ' + miss.length + ' 道题未作答：第 '
-            + idx.slice(0,6).join('、') + (idx.length>6?'…':'') + ' 题';
-          return;
-        }
-        finish(ans);
-      };
-      wrap.onclick = function(e){ if(e.target === wrap) finish(null); };
-      body.innerHTML = '<div style="font-size:12px;color:var(--text-2);padding:10px 0">题目加载中…</div>';
-      window.api.get_risk_profile_questions().then(function(r){
-        if(!r || r.error){ body.innerHTML=''; note.textContent = '题目加载失败：' + ((r&&r.error)||'未知错误'); return; }
-        qs = r.questions || [];
-        render(qs);
-      }).catch(function(e){ body.innerHTML=''; note.textContent = '题目加载失败：' + e; });
-    });
-  };
-  // 测评结果 → 可读文本（结果弹窗用）。档位含义优先给「单笔最大亏损占总资金」这个派生指标：
-  // 「连亏 5 次就 -10%」比「止损 12%」直观得多。
-  window.riskProfileResultText = function(r, extra){
-    const d = r.derived||{}, p = r.params||{};
-    let t = '评定档位：' + (r.label||'') + '档\n';
-    t += '单票上限 ' + (p.max_single_position*100).toFixed(0) + '%　｜　单笔止损 ' + (p.single_max_loss_pct*100).toFixed(0) + '%　｜　时间止损 ' + p.time_stop_days + ' 日\n';
-    t += '总仓位上限 ' + (p.total_position_cap_pct*100).toFixed(0) + '%　｜　技术共振阈值 ' + p.tech_resonance_threshold + '\n';
-    t += '单笔最大亏损占总资金 ' + (d.single_trade_loss_per_equity || d.single_trade_loss_pct_of_equity || 0) + '%';
-    if(d.consecutive_losses_to_minus_10pct) t += '（连亏 ' + d.consecutive_losses_to_minus_10pct + ' 次账户 -10%）';
-    t += '\n';
-    if(r.desc) t += '\n' + r.desc + '\n';
-    if(r.warnings && r.warnings.length) t += '\n注意：\n- ' + r.warnings.join('\n- ') + '\n';
-    if(extra) t += '\n' + extra;
-    if(r.disclaimer) t += '\n' + r.disclaimer;
-    return t;
-  };
-  // 生成新策略：点一次 → 弹风险偏好测评 → （并行）AI 解析 → 命名 → 落成新方案。
-  // ⛔ 老方案零改动：档位与筛选条件只写进新建的那个方案（后端 ai_create_scheme 保证）。
-  window.aiSchemeApply = async function(){
-    const cfg = await window.ensureAiConfig();
-    if(!cfg || !cfg.configured){ showToast('请先到「设置 / AI 解读」配置 DeepSeek API Key', 'warn'); return; }
-    const text = ((document.getElementById('aiSchemeText')||{}).value||'').trim();
-    if(!text){ showToast('请先描述你想要的策略（例：RSI 大于 80 且均线多头排列）', 'warn'); return; }
-    const note = document.getElementById('aiSchemeNote');
-    if(note) note.textContent = 'AI 解析中…（约 10~30 秒，可同时作答测评）';
-    // 并行：AI 解析慢，测评作答时间刚好盖住这段等待
-    const aiP = window.api.ai_scheme_conditions(text)
-      .then(function(x){ return x || {}; })
-      .catch(function(e){ return { error: String(e) }; });
-    const answers = await window.riskProfileDialog();
-    if(!answers){
-      if(note) note.textContent = '';
-      showToast('已取消，未生成新方案', 'warn');
-      return;
-    }
-    const preview = await window.api.preview_risk_profile(answers);
-    if(!preview || preview.error){
-      if(note) note.textContent = '';
-      showToast('测评结果异常：' + ((preview&&preview.error)||'未知错误'), 'error');
-      return;
-    }
-    const r = await aiP;
-    let filters = [], aiWarn = '';
-    if(r && r.error){
-      if(note) note.textContent = '';
-      const go = await window.showChoiceDialog('AI 解析失败',
-        '原因：' + r.error + '\n\n是否仍按测评档位「' + preview.label + '」新建方案（不含 AI 筛选条件）？',
-        [{label:'仍要新建', value:'yes', primary:true}, {label:'放弃', value:'no', danger:true}]);
-      if(go !== 'yes'){ showToast('已放弃生成', 'warn'); return; }
-      aiWarn = 'AI 解析失败（' + r.error + '），本次只落测评档位、未生成筛选条件。';
-    }else{
-      filters = r.filters || [];
-      if(!filters.length){
-        aiWarn = 'AI 未生成可用筛选条件'
-          + ((r.unsupported && r.unsupported.length) ? ('（暂不支持：' + r.unsupported.join('、') + '）') : '')
-          + '，本次只落测评档位。';
-      }
-    }
-    // 命名：默认名带档位。⛔ 方案名不能含 '-'（WebAPI._validate_scheme_name），所以用 '·'
-    let created = null;
-    for(let attempt=0; attempt<5 && !created; attempt++){
-      const input = await window.showPromptDialog(
-        '测评结果：' + preview.label + '档 —— 为新方案命名',
-        'AI策略·' + preview.label + (attempt ? String(attempt+1) : ''));
-      if(input === null){ if(note) note.textContent=''; showToast('已取消，未生成新方案','warn'); return; }
-      const nm = (input || '').trim();
-      if(!nm){ showToast('方案名不能为空','warn'); continue; }
-      if(note) note.textContent = '正在生成新方案…';
-      const res = await window.api.ai_create_scheme(nm, answers, filters, cfgMarket, cfgDirection, cfgPeriod);
-      if(res && res.error){
-        if(res.name_exists){ if(note) note.textContent=''; showToast('方案名已存在：' + nm + '，请换一个','warn'); continue; }
-        if(note) note.textContent = '';
-        showToast('生成失败：' + res.error, 'error');
-        return;
-      }
-      created = res;
-    }
-    if(!created){ if(note) note.textContent=''; showToast('多次命名冲突，已放弃生成','warn'); return; }
-    try{
-      await loadSchemes();
-      await openScheme(created.scheme_name);
-      try { if(typeof refreshPeriodSelectors === 'function') await refreshPeriodSelectors(); } catch(_){}
-    }catch(e){ console.error('生成新方案后刷新失败', e); }
-    const extra = (created.filters_added
-        ? ('已并入 ' + created.filters_added + ' 条 AI 筛选条件（该方案内共 ' + created.filters_total + ' 条）')
-        : '未并入新的筛选条件')
-      + (aiWarn ? ('\n' + aiWarn) : '');
-    if(note) note.textContent = '已生成新方案：' + created.scheme_name;
-    showToast('已生成新方案「' + created.scheme_name + '」（' + created.label + '档）', 'success');
-    window.openAiResultDialog('生成新策略 · ' + created.label + '档',
-      '已生成新方案：' + created.scheme_name + '\n（原方案未改动，新方案已切为当前方案）\n\n'
-      + window.riskProfileResultText(created, extra));
   };
 
   window.saveScheme = async function(){
@@ -6531,7 +6075,6 @@ function initPyWebViewApi(){
     document.getElementById('errorCount').textContent = sm.error || 0;
     renderDiagnosisTables(r.results || []);
     window._lastDiagnosisReport = r.report_text || '';
-    window._lastDiagnosisResults = r.results || [];   // 供「AI 解读」按钮消费
     // 上下文信息头（#013）
     const ctx = document.getElementById('diagContextBar');
     if(ctx){
@@ -6793,6 +6336,9 @@ function initPyWebViewApi(){
             const elapsed = r.elapsed ? r.elapsed.toFixed(0) : '?';
             showToast(`扫描完成: ${elapsed}秒, K线缓存命中 ${r.cache_hit}/${r.total} (${pct}%)`, 'info');
           }
+          if(r.status === 'completed' && r.finance_filtered){
+            showToast(`财务筛选剔除 ${r.finance_filtered} 只（爆雷/不满足阈值）`, 'info');
+          }
           if(r.error) showToast('扫描异常: ' + r.error);
         }
       }catch(e){ console.error(e); }
@@ -6874,9 +6420,8 @@ function initPyWebViewApi(){
         return String(va||'').localeCompare(String(vb||'')) * _scanSortDir;
       });
       renderScanResults(results);
-      // 供「切换初/高级」时即时重绘（见 window.redrawScanViews）＋供 AI 解读跨闭包读取
+      // 供「切换初/高级」时即时重绘（见 window.redrawScanViews）
       _scanResultsCache = results.slice();
-      window._scanResultsCache = _scanResultsCache;
       renderSectorGrid(r.sectors || []);
       // 状态文本：扫描状态 + 缓存时间 + 过期警告
       const baseStatus = '状态：' + (r.done ? '完成' : (r.status || '扫描中…')) +
@@ -7351,7 +6896,7 @@ function initPyWebViewApi(){
       const emoCls = emo < 0 ? 'down' : (emo > 0 ? 'up' : 'weak');
       const badges = []
         .concat((r.signal_type && r.signal_type === worst.signal_type) ? ['<span style="font-size:9px;color:var(--down);border:1px solid rgba(239,83,80,.5);border-radius:3px;padding:0 4px;margin-left:4px">最不执行</span>'] : [])
-        .concat((r.signal_type && r.signal_type === cost.signal_type) ? ['<span style="font-size:9px;color:var(--warn);border:1px solid rgba(255,193,7,.4);border-radius:3px;padding:0 4px;margin-left:4px">亏最多</span>'] : [])
+        .concat((r.signal_type && r.signal_type === cost.signal_type && (Number(cost.emotion_sum) || 0) < 0) ? ['<span style="font-size:9px;color:var(--warn);border:1px solid rgba(255,193,7,.4);border-radius:3px;padding:0 4px;margin-left:4px">亏最多</span>'] : [])
         .concat((r.reliable === false) ? ['<span class="weak" style="font-size:9px;margin-left:4px">样本少</span>'] : [])
         .join('');
       html += '<tr>'
@@ -7380,7 +6925,7 @@ function initPyWebViewApi(){
       tbl.innerHTML = '<div class="weak" style="font-size:11px">暂无信号</div>';
       return;
     }
-    const dimCn = {signal_type:'信号类型', market:'市场'};
+    const dimCn = {signal_type:'信号类型'};
     const comfort = P.comfort || {};
     const strain = P.strain || {};
     let html = '<table class="tbl" style="min-width:520px"><thead><tr>'
@@ -7430,18 +6975,24 @@ function initPyWebViewApi(){
         + (w.count || 0) + ' 条里漏了 ' + (w.not_executed || 0) + ' 条）。'
         + '当前有 <b>' + pend.length + '</b> 条未执行——已在下表信号类型处标记「盯防」。</div>';
       if(pend.length){
-        html += '<div style="margin-top:6px;display:flex;flex-direction:column;gap:4px">';
-        for(const p of pend.slice(0, 5)){
+        const rows = pend.slice(0, 5).map(p=>{
           const dv = (p.diff_pct === null || p.diff_pct === undefined) ? null : Number(p.diff_pct);
           const dTxt = dv === null ? '--' : (dv > 0 ? '+' : '') + dv.toFixed(2) + '%';
           const dCls = dv === null || dv === 0 ? 'weak' : (dv > 0 ? 'up' : 'down');
-          html += '<div style="font-size:11px;color:var(--text-1)">⚠ '
-            + _discEsc(p.name || '') + ' ' + _discEsc(p.code || '') + ' · 发出 ' + _discEsc(_discFmtTime(p.ts))
-            + ' · 触发 ' + (p.trigger_price != null ? p.trigger_price : '--')
-            + ' 现价 ' + (p.latest_price != null ? p.latest_price : '--')
-            + ' <span class="num ' + dCls + '">' + dTxt + '</span></div>';
-        }
-        html += '</div>';
+          return '<tr>'
+            + '<td class="weak" style="white-space:nowrap">' + _discEsc(_discFmtTime(p.ts)) + '</td>'
+            + '<td><span style="font-weight:700;color:var(--text-0)">' + _discEsc(p.name || '') + '</span>'
+            + '<span class="weak"> ' + _discEsc(p.code || '') + '</span></td>'
+            + '<td class="num" style="text-align:right">' + (p.trigger_price != null ? p.trigger_price : '--') + '</td>'
+            + '<td class="num" style="text-align:right">' + (p.latest_price != null ? p.latest_price : '--') + '</td>'
+            + '<td style="text-align:right"><span class="num ' + dCls + '">' + dTxt + '</span></td>'
+            + '</tr>';
+        }).join('');
+        html += '<div style="margin-top:6px;overflow-x:auto"><table class="tbl" style="width:100%">'
+          + '<thead><tr><th style="text-align:left">时间</th><th style="text-align:left">标的</th>'
+          + '<th style="text-align:right">触发价</th><th style="text-align:right">现价</th>'
+          + '<th style="text-align:right">触发至今</th></tr></thead>'
+          + '<tbody>' + rows + '</tbody></table></div>';
       }
       body.innerHTML = html;
     } else {

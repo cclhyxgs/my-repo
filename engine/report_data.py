@@ -129,25 +129,19 @@ def _parse_star_count(s):
 def _json_safe(v, depth=0, max_list=6, max_depth=2):
     """把引擎值递归压成 JSON 安全结构。
 
-    默认参数（`max_list=6, max_depth=2`）服务于 `reportData['techRaw']`：指标序列只保留
+    默认参数（`max_list=6, max_depth=2`）服务 `reportData['techRaw']`：指标序列只保留
     末尾几项、深层嵌套降级为短字符串，以控体积。
-
-    ⛔ 但**方案配置审查**（`server.ai.prompts._trim_scheme_config`）必须传更大的
-    `max_list/max_depth`：方案里 `entry_conditions.strong` 这类是 depth=2 的 dict、
-    `veto_enabled` 有 8+ 个键，用默认值会被**降级成截断字符串**
-    （2026-09-27 实际踩到：`strong` 变成 `"{'tech_signal': [...], 'veto_on': True, ..."` 的字符串）
-    ⇒ AI 拿到的是残缺文本，无法审查。
 
     ⛔ 为什么必须做：`ctx.tech` 混有 numpy 标量、NaN/Inf、嵌套 dict、长序列 list。
     直接塞进 reportData 会让 `json.dumps` 产出**非法 JSON**（`NaN` 不是合法 JSON 字面量），
-    前端 `JSON.parse` 整包失败 ⇒ 分析页白屏。这是「AI 增强搞坏主流程」的典型路径。
+    前端 `JSON.parse` 整包失败 ⇒ 分析页白屏。
     规则：
       - bool 先于 int 判定（bool 是 int 子类）
       - float 必须 isfinite，否则丢弃
       - dict 递归，深度 >=max_depth 降级为短字符串（避免无界膨胀）
       - list 只留末尾 max_list 项（指标序列里最近的最有意义）
       - 其余（含 numpy 标量）尝试 float()，失败则丢弃
-    丢弃的键**直接不出现**，好过留 null——null 会被 AI 误读成「该项为 0」。
+    丢弃的键**直接不出现**，好过留 null（避免把缺失误读成「该项为 0」）。
     """
     from math import isfinite
     if v is None or isinstance(v, bool):

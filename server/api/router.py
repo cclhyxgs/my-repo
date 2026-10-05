@@ -8,7 +8,6 @@
 from fastapi import APIRouter
 
 from server.api import (
-    ai,
     analyze,
     auth,
     backtest,
@@ -34,7 +33,6 @@ api_router.include_router(market.router)
 api_router.include_router(quote.router)
 api_router.include_router(quote_only.router)
 api_router.include_router(analyze.router)
-api_router.include_router(ai.router)
 api_router.include_router(kline.router)
 api_router.include_router(search.router)
 api_router.include_router(backtest.router)

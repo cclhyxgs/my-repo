@@ -1,6 +1,0 @@
-{
-  "api_key": "",
-  "model": "deepseek-flash",
-  "enabled": false,
-  "_说明": "自定义：在「模型配置」页填写 DeepSeek API Key 后会自动生成本文件（config/ai_config.json）。api_key 从 platform.deepseek.com 申请；model 可选 deepseek-flash（默认，便宜）或 deepseek-v4-pro（更强更贵）。enabled 由是否有 api_key 自动决定，无需手改。"
-}

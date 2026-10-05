@@ -195,24 +195,6 @@ hiddenimports = ['clr', 'pythonnet'] + pythonnet_hidden + pytdx_hidden + [
         # 故必须显式登记（2026-09-18）。
         'engine.kline_scheduler',
         'engine.kline_refresh',
-        # ── AI 解读层（2026-09-27 补登记）──────────────────────────────
-        # ⛔ 根因：ui/web_api.py 里全是「函数内延迟 import」（from server.ai import
-        #    service / from server.core.errors import ApiError），PyInstaller 静态
-        #    分析扫不到 ⇒ 之前 dist/M-Bull.exe 里 server 包 **0 命中**，桌面端点任何
-        #    AI 入口都是 ModuleNotFoundError 被 except 吞掉，只显示「AI 调用失败」。
-        #    实测 CArchiveReader 列 TOC：server* / fastapi 命中 0。
-        # ⚠️ 只登记桌面端真正用到的最小集（ai + core 三件套）。**不要**登记
-        #    server.api / server.db / server.worker / server.adapters —— 会把 fastapi、
-        #    starlette、pydantic、SQLAlchemy 整条依赖树拖进单文件 EXE。
-        #    （server/core/errors.py 已把 fastapi 改成函数内延迟导入，桌面端零依赖。）
-        'server',
-        'server.ai',
-        'server.ai.client',
-        'server.ai.config',
-        'server.ai.prompts',
-        'server.ai.modes',
-        'server.ai.service',
-        'server.ai.filter_engine',
         'server.core',
         'server.core.errors',
         'server.core.time',
@@ -223,7 +205,7 @@ a = Analysis(
     ['main_webview.py'],
     # 显式把项目根加入模块搜索路径：server/ 是**纯 Python 顶层包**，PyInstaller 只在
     # sys.path 里找它。UI 侧全是函数内延迟 import，静态分析扫不到，必须靠 hiddenimports
-    # 兜底；这里补 pathex 保证 hiddenimports 里的 'server.ai.*' 能被解析到（否则
+    # 兜底；这里补 pathex 保证 hiddenimports 里的 'server.core.*' 能被解析到（否则
     # Analysis 会静默跳过该条目 → 打包出的 EXE 里仍然没有 server 包）。
     pathex=[SPECPATH],
     binaries=[],
