@@ -276,3 +276,110 @@ def _scan_worker(codes_chunk, up_ratio=0.5, sector_map=None, direction='long', p
         return results
     except Exception:
         return []
+
+
+# ── 财务筛选（全市场扫描 TopN 候选的逐票财务判定，见 .trae/documents/扫描财务筛选方案.md）──
+
+def _fnum(v):
+    """财务字段安全取数：非数值一律归 0（缺失即 0，由判定语义决定放行/剔除）。"""
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def finance_rules_pass(rules, price, fin):
+    """单票财务规则判定：True=保留，False=剔除（供 apply_finance_guard 逐票套用）。
+
+    rules: None 或 dict。dict 键全可选（None/缺键=不限）：
+      pb_max（市净率上限）/ pe_max（市盈率上限）/ eps_min（每股收益下限）/
+      debt_ratio_max（资产负债率上限 %）/ mcap_min（总市值下限，单位亿）。
+    语义=硬过滤：条件不满足即剔除；仅**数据缺失/不可算**才放行该规则（安全降级，不误杀）。
+
+    爆雷硬剔除恒生效（不可配置）：每股净资产<0（资不抵债）或 净利<0（亏损）→ 剔除。
+    口径与 veto_registry._finance_risk 一致；市值/EPS 用 ×10000 总量字段同口径相除，
+    对绝对单位不敏感（见 tdx.fetch_finance 注释）。
+    """
+    if not fin or not isinstance(fin, dict):
+        return True                       # 无财务数据 → 放行（查询失败分支已在调用方处理）
+    jz = _fnum(fin.get('meigujingzichan') or fin.get('jingzichan'))
+    jl = _fnum(fin.get('jinglirun'))
+    zg = _fnum(fin.get('zongguben'))
+    zzc = _fnum(fin.get('zongzichan'))
+    ldfz = _fnum(fin.get('liudongfuzhai'))
+    cqfz = _fnum(fin.get('changqifuzhai'))
+    px = _fnum(price)
+
+    # 爆雷硬剔除（资不抵债 / 亏损）—— 恒生效，不可配置
+    if jz < 0 or jl < 0:
+        return False
+
+    if not rules or not isinstance(rules, dict):
+        return True                       # 仅爆雷硬剔除（初级模式现状）
+
+    # PB 上限：每股净资产≤0（已爆雷剔除）→ 无意义跳过；每股净资产>0 才可比
+    pb_max = rules.get('pb_max')
+    if pb_max is not None and jz > 0 and px > 0 and (px / jz) > _fnum(pb_max):
+        return False
+
+    # PE 上限：净利≤0 无意义 → 隐含剔除（盈利要求）；总股本缺失 → 放行
+    pe_max = rules.get('pe_max')
+    if pe_max is not None:
+        if jl <= 0:
+            return False
+        if zg > 0 and px > 0 and (px * zg / jl) > _fnum(pe_max):
+            return False
+
+    # 总市值下限（亿）：price × 总股本 / 1e8；数据缺失 → 放行
+    mcap_min = rules.get('mcap_min')
+    if mcap_min is not None and px > 0 and zg > 0:
+        if (px * zg / 1e8) < _fnum(mcap_min):
+            return False
+
+    # 每股收益下限：EPS = 净利 / 总股本（同口径相除）；总股本缺失 → 放行
+    eps_min = rules.get('eps_min')
+    if eps_min is not None and zg > 0 and (jl / zg) < _fnum(eps_min):
+        return False
+
+    # 资产负债率上限（%）：(流动+长期负债) / 总资产 × 100；总资产≤0 → 放行
+    debt_max = rules.get('debt_ratio_max')
+    if debt_max is not None and zzc > 0:
+        if ((ldfz + cqfz) / zzc * 100.0) > _fnum(debt_max):
+            return False
+
+    return True
+
+
+def apply_finance_guard(results, topn, rules):
+    """对排序后 results 的前 topn 只逐票查财务并套用财务筛选，剔除后不补位。
+
+    rules: None → 仅爆雷硬剔除（初级模式现状，回退后与旧财务护栏等价）；
+           dict 且 enabled 显式为 False → 整个财务筛选关闭，短路不查财务（性能）；
+           空 dict / enabled 缺省 → 查财务，爆雷硬剔除 + 已配置阈值。
+    单只查询失败（fin 缺失）→ 安全放行，不误杀整批（与旧护栏行为一致）。
+    返回 (new_results, dropped)。
+    """
+    topn = int(topn or 0)
+    if topn <= 0 or not results:
+        return results, 0
+    if isinstance(rules, dict) and rules.get('enabled') is False:
+        return results, 0
+    try:
+        from engine.data_sources import tdx
+    except Exception:
+        return results, 0
+    kept, dropped = [], 0
+    for r in results[:topn]:
+        fin = None
+        try:
+            fin, _err = tdx.fetch_finance(r.get('code') or '')
+        except Exception:
+            fin = None
+        if not isinstance(fin, dict):
+            kept.append(r)                # 查询失败/无数据 → 放行
+            continue
+        if not finance_rules_pass(rules, r.get('price'), fin):
+            dropped += 1
+            continue
+        kept.append(r)
+    return kept + results[topn:], dropped

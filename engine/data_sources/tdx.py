@@ -719,6 +719,14 @@ def fetch_finance(stock_code):
         "jingzichan": _f("meigujingzichan"),   # 别名：每股净资产（否决判资不抵债用）
         "jinglirun": _f("jinglirun"),
         "shuihoulirun": _f("shuihoulirun"),
+        # 全市场扫描财务筛选用（与 jingzichan/jinglirun 同口径 ×10000 总量换算，
+        # 只用于比值/乘积计算——市值=price×总股本、EPS=净利/总股本、
+        # 资产负债率=(流动+长期负债)/总资产——同口径相除对绝对单位不敏感）：
+        "zongguben": _f("zongguben"),         # 总股本（×10000 口径）
+        "liutongguben": _f("liutongguben"),   # 流通股本（×10000 口径）
+        "zongzichan": _f("zongzichan"),       # 总资产（×10000 口径）
+        "liudongfuzhai": _f("liudongfuzhai"), # 流动负债（×10000 口径）
+        "changqifuzhai": _f("changqifuzhai"), # 长期负债（×10000 口径）
         "updated_date": updated_date,
     }
     with _finance_cache_lock:

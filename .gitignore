@@ -56,6 +56,7 @@ config/data_sources.json
 config/discipline_journal.json
 config/sector_map.json
 config/watchlist*.txt
+config/tdx_servers.json   # 通达信服务器节点测速缓存（运行期自动生成）
 
 # ===== 编辑器 / IDE =====
 .vscode/

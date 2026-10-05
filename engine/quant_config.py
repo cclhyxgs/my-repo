@@ -212,6 +212,9 @@ def _build_blank_config():
         # 于是方案里明明存了条件却被静默丢弃 → get_scan_tech_filter() 恒为 None
         # → 「应用筛选」点了完全没反应（2026-09-17 用户实报）。
         'scan_tech_filter': [],
+        # 全市场扫描「财务筛选」阈值（高级模式，随方案保存；enabled=False 显式关闭）。
+        # 默认开启（保持爆雷硬剔除护栏现状）；阈值 None=不限。
+        'scan_finance_filter': {'enabled': True},
         'enabled': dict(DEFAULT_ENABLED),
     }
 
@@ -1463,6 +1466,17 @@ def get_scan_tech_filter():
     结构为条件列表（支持 AND 组合，语义与 _evaluate_tech_conditions / 建仓技术条件一致）。
     未配置返回 None → 引擎跳过过滤（全保留）；空列表同样等同于不启用。"""
     return _cfg().get('scan_tech_filter')
+
+def get_scan_finance_filter():
+    """读取「财务筛选」阈值（高级模式全市场扫描·方案级）。
+
+    结构如 {enabled, pb_max, pe_max, eps_min, debt_ratio_max, mcap_min}，
+    enabled=False 显式关闭整个财务筛选（含爆雷护栏）；阈值 None/缺键=不限。
+    空 dict 或缺键（旧配置）返回 {'enabled': True}，保持爆雷护栏默认开启。"""
+    v = _cfg().get('scan_finance_filter')
+    if isinstance(v, dict) and v:
+        return v
+    return {'enabled': True}
 
 def get_veto_params():
     """读取否决项阈值参数（方案级，全局一套，随方案切换）。

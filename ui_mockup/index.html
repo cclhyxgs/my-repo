@@ -1270,16 +1270,33 @@ html[data-usage="advanced"] .basic-only-tech{display:none}
                 </div>
               </div>
               <!-- 高级专属：财务筛选（扫描时对前 TopN 候选逐票查通达信财务；保存后下次扫描生效） -->
-              <div class="gated-factor" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px">
-                <label style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-size:11px;color:var(--text-2)">
+              <div class="gated-factor" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px">
+                <label class="form-label" style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;cursor:pointer">
                   <input type="checkbox" id="scanFinEnabled" style="accent-color:var(--primary)" onchange="onScanFinChange()">财务筛选
                 </label>
-                <span style="font-size:10.5px;color:var(--text-3)">PB≤</span><input class="form-input w-sm" id="scanFinPb" placeholder="不限" title="市净率=现价/每股净资产，排除高估值" style="width:52px;padding:0 6px" oninput="onScanFinChange()">
-                <span style="font-size:10.5px;color:var(--text-3)">PE≤</span><input class="form-input w-sm" id="scanFinPe" placeholder="不限" title="市盈率=总市值/净利润（单期口径，仅净利为正的票可比）" style="width:52px;padding:0 6px" oninput="onScanFinChange()">
-                <span style="font-size:10.5px;color:var(--text-3)">市值≥</span><input class="form-input w-sm" id="scanFinMcap" placeholder="亿" title="总市值=现价×总股本，单位亿元" style="width:56px;padding:0 6px" oninput="onScanFinChange()">
-                <span style="font-size:10.5px;color:var(--text-3)">EPS≥</span><input class="form-input w-sm" id="scanFinEps" placeholder="不限" title="每股收益=净利润/总股本（单期口径）" style="width:52px;padding:0 6px" oninput="onScanFinChange()">
-                <span style="font-size:10.5px;color:var(--text-3)">负债率≤</span><input class="form-input w-sm" id="scanFinDebt" placeholder="%" title="资产负债率=(流动+长期负债)/总资产" style="width:52px;padding:0 6px" oninput="onScanFinChange()">
-                <span style="font-size:10.5px;color:var(--text-2)">对前N名候选逐票查财务，<strong>保存后下次扫描生效</strong></span>
+                <span style="display:inline-flex;align-items:center;gap:4px">
+                  <span style="font-size:10.5px;color:var(--text-3);white-space:nowrap">PB≤</span>
+                  <input class="form-input w-sm" id="scanFinPb" placeholder="不限" title="市净率=现价/每股净资产，排除高估值" style="width:58px;height:24px;padding:0 6px" oninput="onScanFinChange()">
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:4px">
+                  <span style="font-size:10.5px;color:var(--text-3);white-space:nowrap">PE≤</span>
+                  <input class="form-input w-sm" id="scanFinPe" placeholder="不限" title="市盈率=总市值/净利润（单期口径，仅净利为正的票可比）" style="width:58px;height:24px;padding:0 6px" oninput="onScanFinChange()">
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:4px">
+                  <span style="font-size:10.5px;color:var(--text-3);white-space:nowrap">市值≥</span>
+                  <input class="form-input w-sm" id="scanFinMcap" placeholder="亿" title="总市值=现价×总股本，单位亿元" style="width:58px;height:24px;padding:0 6px" oninput="onScanFinChange()">
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:4px">
+                  <span style="font-size:10.5px;color:var(--text-3);white-space:nowrap">EPS≥</span>
+                  <input class="form-input w-sm" id="scanFinEps" placeholder="不限" title="每股收益=净利润/总股本（单期口径）" style="width:58px;height:24px;padding:0 6px" oninput="onScanFinChange()">
+                </span>
+                <span style="display:inline-flex;align-items:center;gap:4px">
+                  <span style="font-size:10.5px;color:var(--text-3);white-space:nowrap">负债率≤</span>
+                  <input class="form-input w-sm" id="scanFinDebt" placeholder="%" title="资产负债率=(流动+长期负债)/总资产" style="width:58px;height:24px;padding:0 6px" oninput="onScanFinChange()">
+                </span>
+              </div>
+              <div class="gated-factor" style="margin-top:5px;font-size:10.5px;color:var(--text-3)">
+                扫描时对前N名候选逐票查通达信财务，保存后<strong style="color:var(--text-2)">下次扫描</strong>生效
               </div>
               <div class="form-row" style="margin-top:8px;gap:8px;align-items:center;display:none" id="scanKTypeRow">
                 <span style="font-size:11px;color:var(--text-2)">分析方案：</span>

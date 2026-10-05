@@ -536,6 +536,10 @@ def _config_to_quant_data(cfg, direction='long'):
     # 高级模式全市场扫描·技术指标二级筛选（AND 组合条件；随方案保存）
     data['scanFilter'] = cfg.get('scan_tech_filter') or []
 
+    # 高级模式全市场扫描·财务筛选阈值（随方案保存；缺键给默认开启，保持爆雷护栏现状）
+    _sff = cfg.get('scan_finance_filter')
+    data['scanFinanceFilter'] = _sff if isinstance(_sff, dict) else {'enabled': True}
+
     return data
 
 
@@ -735,6 +739,10 @@ def _quant_data_to_config(data, direction='long'):
 
     # 高级模式全市场扫描·技术指标二级筛选（AND 组合条件；空 = 不筛选，仍随方案保存）
     config['scan_tech_filter'] = data.get('scanFilter') or []
+
+    # 高级模式全市场扫描·财务筛选阈值（随方案保存；前端缺省 enabled=True 保持爆雷护栏）
+    _sff = data.get('scanFinanceFilter')
+    config['scan_finance_filter'] = _sff if isinstance(_sff, dict) else {'enabled': True}
 
     # 否决项阈值参数（方案级全局一套；随方案保存，缺失项引擎用注册表 defaults 兜底）
     _VP = data.get('vetoParams')
