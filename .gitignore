@@ -48,8 +48,10 @@ config/credentials.json
 
 # ===== 开发机用户工作配置（个人自选/方案/交易账本，非模板：
 #       模板在 engine/config/seed，须保留追踪）=====
-# 注：config/quant_model.json（方案/因子档案/当前方案）2026-10-05 起**纳入**版本控制
-#     —— 它是核心资产，需要可 diff / 可回退；已确认不含密钥类敏感字段。
+# 注：config/quant_model.json（方案/因子档案/当前方案）**不纳入**版本控制
+#     —— 2026-10-05 用户拍板：git 只管源码，方案配置一律不进仓库（dev 与 exe 两份都不管）。
+config/quant_model.json
+config/quant_model*.json
 config/data_sources.json
 config/discipline_journal.json
 config/sector_map.json
