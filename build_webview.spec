@@ -64,25 +64,10 @@ if os.path.isdir(_dev_cfg):
             except Exception:
                 pass
 
-# ── 打包前自动重算 license 自校验指纹（seal）──
-# 若遗漏此步，冻结态会因「源码字节码哈希 ≠ _seal 记录值」fail-closed 锁死正版用户。
-# 自动重算保证 _seal.py 始终与「即将进包的字节码」一致。设置环境变量
-# MBULL_SKIP_GEN_SEAL=1 可跳过（仅在你知道 seal 已正确时）。
-import os as _os
-import subprocess as _sp
-import sys as _sys
-if not _os.environ.get('MBULL_SKIP_GEN_SEAL'):
-    _gs = _os.path.join(SPECPATH, 'license', 'gen_seal.py')
-    if _os.path.exists(_gs):
-        # 透传优化级别：若构建带 -O/-OO（手动 Optimize），gen_seal 须以相同
-        # 级别编译源码算哈希，否则优化字节码与 _seal 失配 → 冻结态 fail-closed。
-        _gs_args = [_sys.executable]
-        if _sys.flags.optimize:
-            _gs_args.append('-O' * _sys.flags.optimize)
-        _gs_args.append(_gs)
-        print('[build] 自动重算 license 指纹 (gen_seal)...')
-        _sp.check_call(_gs_args)
-
+# ── license 自校验指纹（seal）──
+# license/_seal.py 已在仓库中预生成并提交（与 license/ 校验侧源码字节码一致）。
+# 打包直接使用该文件，无需重新生成。注意：修改 license 校验侧源码后需由作者侧
+# gen_seal 工具重算指纹，否则冻结态会 fail-closed 锁死。
 from PyInstaller.utils.hooks import collect_submodules
 
 # pythonnet 全部子模块（含 .NET 运行时桥接），clr hook 由 pythonnet 包自带
@@ -153,7 +138,7 @@ hiddenimports = ['clr', 'pythonnet'] + pythonnet_hidden + pytdx_hidden + [
         'license',
         'license.license_manager',
         # 授权硬门禁 + 自校验指纹（seal）：引擎层 enforce 与导入时自校验依赖二者；
-        # _seal.py 由 license/gen_seal.py 在打包前生成（基于最终进包字节码）。
+        # _seal.py 已在仓库中预生成并提交（由作者侧 gen_seal 工具基于最终进包字节码生成）。
         'license.license_guard',
         'license._seal',
         'license._seal_spec',
@@ -246,7 +231,6 @@ a = Analysis(
     runtime_hooks=[],
     excludes=[
         'sympy', 'scipy', 'PyQt5', 'PySide6', 'PySide2', 'tkinter', 'tkinter.test', 'test',
-        'license.keygen',
         # 排除非 Windows 后端相关依赖
         'gi', 'gtk', 'webkit',
         'webview.platforms.gtk', 'webview.platforms.cocoa',

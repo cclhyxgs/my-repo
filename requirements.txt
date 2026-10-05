@@ -11,13 +11,3 @@ cryptography==49.0.0
 # 通达信行情源：A股日K 第一手前复权源（engine/data_sources/tdx.py 延迟 import；
 # 打包需在 build_webview.spec 的 hiddenimports 登记 pytdx 全部子模块）
 pytdx==1.72
-
-
-C:\Users\Administrator\AppData\Local\M-Bull
-
-
-python license/keygen.py gen --type trial    --mid <机器码>    # 试用（30天）
-python license/keygen.py gen --type monthly  --mid <机器码>    # 月度（30天）
-python license/keygen.py gen --type yearly   --mid <机器码>    # 年度（365天）
-python license/keygen.py gen --type per_use  --mid <机器码> --uses 100  # 按次（100次）
-python license/keygen.py gen --type lifetime --mid <机器码>    # 永久（永不过期）
